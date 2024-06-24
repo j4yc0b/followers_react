@@ -9,7 +9,7 @@ function Header() {
     return(
         <header className="shadow-lg mt-3">
           <a onClick={handleClick} className="">
-            <h1 className="header">See who's not following you back</h1>
+            <h1 className="header hover:text-blue-700 hover:underline hover:cursor-pointer">See who's not following you back</h1>
           </a>
       </header>
     );

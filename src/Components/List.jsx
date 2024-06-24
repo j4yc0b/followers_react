@@ -5,7 +5,7 @@ function List(props) {
     return(
         <div className="p-6 bg-white rounded-lg shadow-lg">    
             <h3 className="smallheader mb-3">{props.name}</h3>
-                <ol className="list-decimal list-inside space-y-2">
+                <ol className="list-decimal list-inside space-y-2 pl-3 text-xl">
                     <li> Go to the Instagram app on your phone and open the blade on the top right corner</li>
                     <li> Click on "Your activity"</li>
                     <li> Scroll all the way down to "Information you shared with Instagram" -section and click "Download Your Information"</li>
@@ -23,7 +23,7 @@ function List(props) {
                     <li> After you receive it, head back to the "Information you shared with Instagram" -section mentioned in step 3)</li>
                     <li> Click the "Download" button under "Available downloads" you will have your data on your device</li>
                     <li className={`${props.hasError ? 'text-2xl border-red-500 bg-red-100' : 'border-gray-300'}`}>
-                    Now just drop the entire folder above or if you are on phone then choose 
+                    Now just navigate to the downloaded folder and choose 
                     the followers_1.json and following.json files from within the folder.
                     </li>
                 </ol>
@@ -38,7 +38,7 @@ List.propTypes = {
 }
 
 List.defaultProps = {
-    name: "Just follow the instructions:",
+    name: "Just follow the instructions to get your files:",
     hasError: false
 }
 

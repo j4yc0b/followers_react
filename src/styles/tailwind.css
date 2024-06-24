@@ -8,7 +8,7 @@
 }
 
 @layer components {
-    .header {
+.header {
         @apply text-6xl font-bold text-blue-400 underline;
   }
 
@@ -22,7 +22,11 @@
 
   .submitbutton {
     @apply px-6 py-2 ml-2 font-bold bg-green-400 text-white rounded hover:bg-green-800
-}
+  }
+
+  .link {
+    @apply hover:text-blue-700 hover:underline hover:cursor-pointer
+  }
 
 }
 
