@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import propTypes from 'prop-types'
+import { Card } from 'react-bootstrap';
 
 function FileUpload({ setHasError, followersFileName, followingFileName }) {
 	const [files, setFiles] = useState([]);
+	const [noFilesSelected, setNoFilesSelected] = useState(true);
 	const [errorMessage, setErrorMessage] = useState('');
 	const [accountsList, setAccountsList] = useState([]);
 	const [isDragOver, setIsDragOver] = useState(false);
@@ -11,17 +13,44 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
 	const navigate = useNavigate();
 
 	const handleFileChange = (event) => {
-		setIsDragOver(false);
-		const selectedFiles = [...event.target.files];
-		setFiles(selectedFiles);
-		setShowSubmitButton(selectedFiles.length > 0); // checking the length
-    };
+		try {
+			const selectedFiles = [...event.target.files];
+			if (selectedFiles.length > 0) {
+				setFiles(selectedFiles);
+				setErrorMessage('');
+				setShowSubmitButton(true);
+				setIsDragOver(false);
+			} else {
+				setShowSubmitButton(false);
+				setHasError(true);
+				setErrorMessage('No files selected.');
+			}
+		} catch (error) {
+			setShowSubmitButton(false);
+			setHasError(true);
+			setErrorMessage('Failed to add files.');
+		  }
+		};
 
 	const handleDrop = (event) => {
 		event.preventDefault();
-		const selectedFiles = [...event.dataTransfer.files];
-		setFiles(selectedFiles);
-		setShowSubmitButton(selectedFiles.length > 0);
+		try {
+		  const droppedFiles = [...event.dataTransfer.files];
+		  if (droppedFiles.length > 0) {
+			setFiles(droppedFiles);
+			setShowSubmitButton(true);
+			setHasError(false); 
+			setErrorMessage(''); // Clear error message
+		  } else {
+			setShowSubmitButton(false);
+			setHasError(true);
+			setErrorMessage('No files selected.');
+		  }
+		} catch (error) {
+		  setShowSubmitButton(false);
+		  setHasError(true);
+		  setErrorMessage('Failed to add files.');
+		}
 		setIsDragOver(false);
 	  };
 
@@ -30,8 +59,12 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
 		setIsDragOver(true);
 	  };
 	
-	  const handleDragLeave = () => {
+	const handleDragLeave = () => {
 		setIsDragOver(false);
+	  };
+
+	const handleClick = () => {
+		document.getElementById('fileInput').click();
 	  };
 	
 	const readFileAsync = (file) => {
@@ -94,17 +127,28 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
 
 	return (
 		<div className={`border-2 border-dashed rounded p-6 text-left cursor-pointer ${isDragOver ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
-		onSubmit={handleSubmit} onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}> 
+		onSubmit={handleSubmit} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
 		<form>
-		  <input multiple type="file" id="fileInput" className="ml-10" onChange={handleFileChange} />
-		  {showSubmitButton && (
-			<button type="submit" id="submitBtn" className="button">
+			<card className="button" onClick={handleClick}>Choose Files</card>
+			{showSubmitButton && (
+			<button type="submit" id="submitBtn" className="submitbutton">
 			  Submit files
-			</button>
-		  )}
+			</button>)}
+		  <input multiple type="file" id="fileInput" className="ml-10 hidden" onChange={handleFileChange} />
+		  {files.length > 0 && (
+        	<div className="mt-4">
+          	<h3 className="text-lg mb-2">Selected Files:</h3>
+          		<ul className="list-disc list-inside">
+            		{Array.from(files).map((file, index) => (
+              		<li key={index}>{file.name}</li>
+            		))}
+          		</ul>
+        	</div>
+     	 	)}
 		</form>
-		{errorMessage && <p className="text-red-500 font-bold">{errorMessage}</p>}
+		{errorMessage && (<p className="text-red-500 font-bold">{errorMessage}</p>)}
 	  </div>
+	  
 	);
 	}
 

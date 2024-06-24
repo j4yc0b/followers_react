@@ -5,6 +5,14 @@
 /.pnp
 .pnp.js
 
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite cache
+.vite
+
 # testing
 /coverage
 

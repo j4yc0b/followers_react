@@ -11,7 +11,7 @@ function List(props) {
                     <li> Scroll all the way down to "Information you shared with Instagram" -section and click "Download Your Information"</li>
                     <li> Request a download</li>
                     <li> Select your Instagram profile from which you want to inspect the followers</li>
-                    <li> Select types of Information</li>
+                    <li> Select types of information</li>
                     <li> Under "Connections" section select "Followers and following"</li>
                     <li> Select download on this device</li>
                     <li> Change date range to "All time"</li>

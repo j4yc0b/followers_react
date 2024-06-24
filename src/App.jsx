@@ -18,8 +18,12 @@ function App() {
           <Route
               path="/" element={
                 <>
-                  <Upload setHasError={setHasError}/>
-                  <List hasError={hasError}/>
+                  <Upload 
+                  setHasError={setHasError}
+                  />
+                  <List
+                   hasError={hasError}
+                  />
                 </>
               }
             />
