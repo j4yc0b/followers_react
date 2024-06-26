@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import propTypes from "prop-types";
-import { Card } from "react-bootstrap";
+import JSZip from "jszip";
 
 function FileUpload({ setHasError, followersFileName, followingFileName }) {
   const [files, setFiles] = useState([]);
@@ -12,9 +12,10 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
   const [showSubmitButton, setShowSubmitButton] = useState(false); // default value in the ()
   const navigate = useNavigate();
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     try {
       const selectedFiles = [...event.target.files];
+      await processFiles(selectedFiles);
       if (selectedFiles.length > 0) {
         setFiles(selectedFiles);
         setErrorMessage("");
@@ -44,6 +45,7 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
           await traverseFileTree(entry, allFiles);
         }
       }
+      await processFiles(allFiles);
       setFiles(allFiles);
       setShowSubmitButton(true);
       setHasError(false);
@@ -56,11 +58,53 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
     setIsDragOver(false);
   };
 
+  const processFiles = async (fileList) => {
+    const allFiles = [];
+
+    for (const file of fileList) {
+      //   if (file.name.endsWith(".zip")) {
+      //     const zipFiles = await extractZip(file);
+      //     allFiles.push(...zipFiles);
+      //   } else {
+      allFiles.push(file);
+      //   }
+    }
+
+    setFiles(allFiles);
+    setShowSubmitButton(allFiles.length > 0);
+    setHasError(false); // Reset error flag if files are successfully added
+    setErrorMessage(""); // Clear error message
+  };
+
+  //   const traverseFileTree = (entry, allFiles) => {
+  //     return new Promise((resolve) => {
+  //       if (entry.isFile) {
+  //         entry.file((file) => {
+  //           allFiles.push(file);
+  //           resolve();
+  //         });
+  //       } else if (entry.isDirectory) {
+  //         const reader = entry.createReader();
+  //         reader.readEntries(async (entries) => {
+  //           for (const ent of entries) {
+  //             await traverseFileTree(ent, allFiles);
+  //           }
+  //           resolve();
+  //         });
+  //       }
+  //     });
+  //   };
+
   const traverseFileTree = (entry, allFiles) => {
     return new Promise((resolve) => {
       if (entry.isFile) {
-        entry.file((file) => {
-          allFiles.push(file);
+        entry.file(async (file) => {
+          if (file.name.endsWith(".zip")) {
+            const zipFiles = await extractZip(file);
+            allFiles.push(...zipFiles);
+          } else {
+            allFiles.push(file);
+          }
           resolve();
         });
       } else if (entry.isDirectory) {
@@ -73,6 +117,27 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
         });
       }
     });
+  };
+
+  const extractZip = async (file) => {
+    const zip = await JSZip.loadAsync(file);
+    const zipFiles = [];
+
+    await Promise.all(
+      Object.keys(zip.files).map(async (fileName) => {
+        const zipFile = zip.files[fileName];
+        if (!zipFile.dir) {
+          try {
+            const content = await zipFile.async("blob");
+            zipFiles.push(new File([content], fileName));
+          } catch (error) {
+            console.error("Failed to extract file from zip:", error);
+          }
+        }
+      })
+    );
+
+    return zipFiles;
   };
 
   const handleDragOver = (event) => {
@@ -97,6 +162,7 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
       // Set up the onload event handler before starting the file read operation.
       // Eventually calling resolve with a value fulfills the promise with that value.
       // This means the promise returned by readFileAsync will be fulfilled with the parsed JSON data.
+
       reader.onload = () => resolve(JSON.parse(reader.result));
 
       // Set up the onerror event handler before starting the file read operation
@@ -111,51 +177,53 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
     event.preventDefault();
     const fileNames = files.map((file) => file.name);
 
-    if (
-      fileNames.includes(followersFileName) &&
-      fileNames.includes(followingFileName)
-    ) {
-      setErrorMessage("");
+    // if (
+    //   fileNames.includes(followersFileName) &&
+    //   fileNames.includes(followingFileName)
+    // ) {
+    setErrorMessage("");
 
-      try {
-        const followersFile = files.find(
-          (file) => file.name === "followers_1.json"
-        );
-        const followingFile = files.find(
-          (file) => file.name === "following.json"
-        );
-
-        const followersData = await readFileAsync(followersFile);
-        const followingData = await readFileAsync(followingFile);
-
-        const followersList = followersData.map((x) => ({
-          user_name: x.string_list_data[0].value,
-          link: x.string_list_data[0].href,
-        }));
-        const followingList = followingData.relationships_following.map(
-          (x) => ({
-            user_name: x.string_list_data[0].value,
-            link: x.string_list_data[0].href,
-          })
-        );
-
-        const accountsList = followingList.filter(
-          (item) =>
-            !followersList.some(
-              (follower) => follower.user_name === item.user_name
-            )
-        );
-        setAccountsList(accountsList);
-        navigate("/accounts", { state: { accountsList } }); // Navigate to the /accounts route and pass the accountsList as state
-      } catch (error) {
-        setErrorMessage("Error processing files: " + error.message);
-      }
-    } else {
-      setHasError(true);
-      setErrorMessage(
-        "One or both of the files uploaded is incorrect, see the correct files below."
+    try {
+      const followersFile = files.find(
+        (file) =>
+          file.name.includes("followers_1.json") &&
+          !file.name.includes("__MACOSX") // filtering out extra files from the zip
       );
+      const followingFile = files.find(
+        (file) =>
+          file.name.includes("following.json") &&
+          !file.name.includes("__MACOSX")
+      );
+
+      const followersData = await readFileAsync(followersFile);
+      const followingData = await readFileAsync(followingFile);
+
+      const followersList = followersData.map((x) => ({
+        user_name: x.string_list_data[0].value,
+        link: x.string_list_data[0].href,
+      }));
+      const followingList = followingData.relationships_following.map((x) => ({
+        user_name: x.string_list_data[0].value,
+        link: x.string_list_data[0].href,
+      }));
+
+      const accountsList = followingList.filter(
+        (item) =>
+          !followersList.some(
+            (follower) => follower.user_name === item.user_name
+          )
+      );
+      setAccountsList(accountsList);
+      navigate("/accounts", { state: { accountsList } }); // Navigate to the /accounts route and pass the accountsList as state
+    } catch (error) {
+      setErrorMessage("Error processing files: " + error.message);
     }
+    // } else {
+    //   setHasError(true);
+    //   setErrorMessage(
+    //     "One or both of the files uploaded is incorrect, see the correct files below."
+    //   );
+    // }
   };
 
   return (
