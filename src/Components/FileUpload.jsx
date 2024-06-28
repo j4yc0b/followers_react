@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import propTypes from "prop-types";
 import JSZip from "jszip";
 
 function FileUpload({ setHasError, followersFileName, followingFileName }) {
@@ -9,14 +8,22 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [accountsList, setAccountsList] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [showSubmitButton, setShowSubmitButton] = useState(false); // default value in the ()
+  const [showSubmitButton, setShowSubmitButton] = useState(false);
   const navigate = useNavigate();
 
   const handleFileChange = async (event) => {
     try {
       const selectedFiles = [...event.target.files];
-      await processFiles(selectedFiles);
+      const allFiles = [];
+      //   await processFiles(selectedFiles);
+
+      for (const item of selectedFiles) {
+        console.log("item:" + item + "with type:" + typeof item);
+        await traverseFileTree(item, allFiles);
+      }
+
       if (selectedFiles.length > 0) {
+        await processFiles(allFiles);
         setFiles(selectedFiles);
         setErrorMessage("");
         setShowSubmitButton(true);
@@ -27,6 +34,7 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
         setErrorMessage("No files selected.");
       }
     } catch (error) {
+      console.error(error);
       setShowSubmitButton(false);
       setHasError(true);
       setErrorMessage("Failed to add files.");
@@ -41,6 +49,7 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
 
       for (const item of droppedItems) {
         const entry = item.webkitGetAsEntry();
+        console.log("item:" + item + "with type:" + typeof item);
         if (entry) {
           await traverseFileTree(entry, allFiles);
         }
@@ -62,12 +71,7 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
     const allFiles = [];
 
     for (const file of fileList) {
-      //   if (file.name.endsWith(".zip")) {
-      //     const zipFiles = await extractZip(file);
-      //     allFiles.push(...zipFiles);
-      //   } else {
       allFiles.push(file);
-      //   }
     }
 
     setFiles(allFiles);
@@ -76,28 +80,10 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
     setErrorMessage(""); // Clear error message
   };
 
-  //   const traverseFileTree = (entry, allFiles) => {
-  //     return new Promise((resolve) => {
-  //       if (entry.isFile) {
-  //         entry.file((file) => {
-  //           allFiles.push(file);
-  //           resolve();
-  //         });
-  //       } else if (entry.isDirectory) {
-  //         const reader = entry.createReader();
-  //         reader.readEntries(async (entries) => {
-  //           for (const ent of entries) {
-  //             await traverseFileTree(ent, allFiles);
-  //           }
-  //           resolve();
-  //         });
-  //       }
-  //     });
-  //   };
-
   const traverseFileTree = (entry, allFiles) => {
     return new Promise((resolve) => {
       if (entry.isFile) {
+        console.log("happy path");
         entry.file(async (file) => {
           if (file.name.endsWith(".zip")) {
             const zipFiles = await extractZip(file);
@@ -228,7 +214,7 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
 
   return (
     <div
-      className={`border-2 border-dashed rounded p-6 text-left cursor-pointer ${isDragOver ? "border-blue-500 bg-blue-100" : "border-gray-300"}`}
+      className={`border-2 border-dashed rounded p-6 text-left cursor-pointer dark:text-white ${isDragOver ? "border-blue-500 bg-blue-100" : "border-gray-300 dark:bg-gray-600"}`}
       onSubmit={handleSubmit}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -253,12 +239,14 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
         />
         {files.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-lg mb-2">Selected Files:</h3>
-            <ul className="list-disc list-inside">
+            <h3 className="text-lg mb-2 font-bold">
+              {files.length} file(s) selected.
+            </h3>
+            {/* <ul className="list-disc list-inside">
               {Array.from(files).map((file, index) => (
                 <li key={index}>{file.name}</li>
               ))}
-            </ul>
+            </ul> */}
           </div>
         )}
       </form>
