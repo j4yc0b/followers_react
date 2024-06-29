@@ -213,15 +213,17 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
         navigate("/accounts", { state: { accountsList } }); // Navigate to the /accounts route and pass the accountsList as state
       } else {
         setErrorMessage("One or both files are incorrect.");
+        setHasError(true);
       }
     } catch (error) {
       setErrorMessage("Error processing files: " + error.message);
+      setHasError(true);
     }
   };
 
   return (
     <div
-      className={`border-2 border-dashed rounded p-6 text-left cursor-pointer dark:text-white ${isDragOver ? "border-blue-500 bg-blue-100" : "border-gray-300 dark:bg-gray-600"}`}
+      className={`flex items-center justify-between border-2 border-dashed rounded p-6 text-left cursor-pointer dark:text-white ${isDragOver ? "flex items-center justify-between border-blue-500 bg-blue-100" : "border-gray-300 dark:bg-gray-600"}`}
       onSubmit={handleSubmit}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -249,15 +251,12 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
             <h3 className="text-lg mb-2 font-bold">
               {files.length} file(s) selected.
             </h3>
-            {/* <ul className="list-disc list-inside">
-              {Array.from(files).map((file, index) => (
-                <li key={index}>{file.name}</li>
-              ))}
-            </ul> */}
+            {errorMessage && (
+              <p className="text-red-500 font-bold">{errorMessage}</p>
+            )}
           </div>
         )}
       </form>
-      {errorMessage && <p className="text-red-500 font-bold">{errorMessage}</p>}
     </div>
   );
 }

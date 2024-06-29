@@ -38,7 +38,7 @@ ListGeneric.defaultProps = {
   hasError: false,
   listItems: [
     "Go to the Instagram app on your phone and open the blade on the top right corner",
-    " Click on 'Your activity'",
+    "Click on 'Your activity'",
     "Scroll all the way down to 'Information you shared with Instagram' -section and click 'Download Your Information'",
     "Request a download",
     "Select your Instagram profile from which you want to inspect the followers",
@@ -49,7 +49,7 @@ ListGeneric.defaultProps = {
     "For the format change it to 'JSON' and then click 'Submit Request'",
     "After you receive it, head back to the 'Information you shared with Instagram' -section mentioned in step 3)",
     "Click the 'Download' button under 'Available downloads' you will have your data on your device",
-    "Now just navigate to the downloaded folder and choose the followers_1.json and following.json files from within the folder",
+    "Now just navigate to the downloaded folder, and you can drop the entire folder above or just choose the followers_1.json and following.json files from within the folder. ",
   ],
 };
 
