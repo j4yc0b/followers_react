@@ -1,18 +1,19 @@
 import { useLocation } from "react-router-dom";
+import propTypes from "prop-types";
 
-function AccountsTable() {
+function AccountsTable(props) {
   const location = useLocation();
   const accountsList = location.state.accountsList;
 
   return (
     <div class="accounts-table" className="m-3 my-6">
       {accountsList.length > 0 && (
-        <table>
+        <table className="">
           <thead>
             <tr className="text-xl">
-              <th>N</th>
-              <th>User Name</th>
-              <th>Link</th>
+              {props.columnNames.map((item, key) => (
+                <th>{item}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -40,3 +41,13 @@ function AccountsTable() {
 }
 
 export default AccountsTable;
+
+AccountsTable.propTypes = {
+  columnNames: propTypes.array,
+  hasError: propTypes.bool,
+};
+
+AccountsTable.defaultProps = {
+  columnNames: ["N", "User Name", "Profile Link"],
+  hasError: false,
+};

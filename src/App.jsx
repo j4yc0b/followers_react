@@ -12,23 +12,25 @@ function App() {
   const [hasError, setHasError] = useState(false);
 
   return (
-    <section className="mx-12 dark:bg-gray-800 dark:text-white">
-      <Router>
-        <Header />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Upload setHasError={setHasError} />
-                <ListGeneric hasError={hasError} />
-              </>
-            }
-          />
-          <Route path="/accounts" element={<AccountsTable />} />
-        </Routes>
-      </Router>
-    </section>
+    <div className="dark:bg-gray-800 dark:text-white">
+      <section className="mx-12">
+        <Router>
+          <Header />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <Upload setHasError={setHasError} />
+                  <ListGeneric hasError={hasError} />
+                </>
+              }
+            />
+            <Route path="/accounts" element={<AccountsTable />} />
+          </Routes>
+        </Router>
+      </section>
+    </div>
   );
 }
 

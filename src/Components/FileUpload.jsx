@@ -15,16 +15,14 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
     try {
       const selectedFiles = [...event.target.files];
       const allFiles = [];
-      //   await processFiles(selectedFiles);
 
-      for (const item of selectedFiles) {
-        console.log("item:" + item + "with type:" + typeof item);
-        await traverseFileTree(item, allFiles);
+      for (const file of selectedFiles) {
+        await processSingleFile(file, allFiles);
       }
 
       if (selectedFiles.length > 0) {
         await processFiles(allFiles);
-        setFiles(selectedFiles);
+        setFiles(allFiles);
         setErrorMessage("");
         setShowSubmitButton(true);
         setIsDragOver(false);
@@ -67,11 +65,25 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
     setIsDragOver(false);
   };
 
+  const processSingleFile = async (file, allFiles) => {
+    if (file.name.endsWith(".zip")) {
+      const zipFiles = await extractZip(file);
+      allFiles.push(...zipFiles);
+    } else {
+      allFiles.push(file);
+    }
+  };
+
   const processFiles = async (fileList) => {
     const allFiles = [];
 
     for (const file of fileList) {
-      allFiles.push(file);
+      if (file.name.endsWith(".zip")) {
+        const zipFiles = await extractZip(file);
+        allFiles.push(...zipFiles);
+      } else {
+        allFiles.push(file);
+      }
     }
 
     setFiles(allFiles);
@@ -161,55 +173,50 @@ function FileUpload({ setHasError, followersFileName, followingFileName }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const fileNames = files.map((file) => file.name);
-
-    // if (
-    //   fileNames.includes(followersFileName) &&
-    //   fileNames.includes(followingFileName)
-    // ) {
     setErrorMessage("");
 
     try {
       const followersFile = files.find(
         (file) =>
-          file.name.includes("followers_1.json") &&
+          file.name.includes(followersFileName) &&
           !file.name.includes("__MACOSX") // filtering out extra files from the zip
       );
       const followingFile = files.find(
         (file) =>
-          file.name.includes("following.json") &&
+          file.name.includes(followingFileName) &&
           !file.name.includes("__MACOSX")
       );
 
-      const followersData = await readFileAsync(followersFile);
-      const followingData = await readFileAsync(followingFile);
+      if (followersFile && followingFile) {
+        const followersData = await readFileAsync(followersFile);
+        const followingData = await readFileAsync(followingFile);
 
-      const followersList = followersData.map((x) => ({
-        user_name: x.string_list_data[0].value,
-        link: x.string_list_data[0].href,
-      }));
-      const followingList = followingData.relationships_following.map((x) => ({
-        user_name: x.string_list_data[0].value,
-        link: x.string_list_data[0].href,
-      }));
+        const followersList = followersData.map((x) => ({
+          user_name: x.string_list_data[0].value,
+          link: x.string_list_data[0].href,
+        }));
+        const followingList = followingData.relationships_following.map(
+          (x) => ({
+            user_name: x.string_list_data[0].value,
+            link: x.string_list_data[0].href,
+          })
+        );
 
-      const accountsList = followingList.filter(
-        (item) =>
-          !followersList.some(
-            (follower) => follower.user_name === item.user_name
-          )
-      );
-      setAccountsList(accountsList);
-      navigate("/accounts", { state: { accountsList } }); // Navigate to the /accounts route and pass the accountsList as state
+        const accountsList = followingList.filter(
+          (item) =>
+            !followersList.some(
+              (follower) => follower.user_name === item.user_name
+            )
+        );
+
+        setAccountsList(accountsList);
+        navigate("/accounts", { state: { accountsList } }); // Navigate to the /accounts route and pass the accountsList as state
+      } else {
+        setErrorMessage("One or both files are incorrect.");
+      }
     } catch (error) {
       setErrorMessage("Error processing files: " + error.message);
     }
-    // } else {
-    //   setHasError(true);
-    //   setErrorMessage(
-    //     "One or both of the files uploaded is incorrect, see the correct files below."
-    //   );
-    // }
   };
 
   return (
