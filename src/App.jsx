@@ -3,10 +3,13 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import List from "./Components/List";
 import ListGeneric from "./Components/ListGeneric";
 import Header from "./Components/Header";
+import Footer from "./Components/Footer";
 import Upload from "./Components/Upload";
 import AccountsTable from "./Components/AccountsTable";
+import LegalNotes from "./Components/LegalNotes";
 import "./styles/tailwind.css";
 import DarkMode from "./Components/DarkMode";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [hasError, setHasError] = useState(false);
@@ -27,7 +30,10 @@ function App() {
               }
             />
             <Route path="/accounts" element={<AccountsTable />} />
+            <Route path="/legal" element={<LegalNotes />} />
           </Routes>
+          <Footer />
+          <Analytics />
         </Router>
       </section>
     </div>
