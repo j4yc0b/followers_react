@@ -10,6 +10,7 @@ import LegalNotes from "./Components/LegalNotes";
 import "./styles/tailwind.css";
 import DarkMode from "./Components/DarkMode";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
   const [hasError, setHasError] = useState(false);
@@ -34,6 +35,7 @@ function App() {
           </Routes>
           <Footer />
           <Analytics />
+          <SpeedInsights />
         </Router>
       </section>
     </div>
